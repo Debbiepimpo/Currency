@@ -35,7 +35,6 @@ class CurrencyAdmin(admin.ModelAdmin):
         """
         if request.method == "POST":
             form = CurrencyConversionForm(request.POST)
-            print(form)
         if not form.is_valid():
             return JsonResponse({"error": "Invalid form data"}, status=400)
 

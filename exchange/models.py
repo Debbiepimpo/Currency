@@ -11,6 +11,7 @@ class Currency(models.Model):
     code = models.CharField(max_length=3, choices=CURRENCY_CHOICES, unique=True)
     name = models.CharField(max_length=20, db_index=True)
     symbol = models.CharField(max_length=10)
+    default = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.code} - {self.name}"
@@ -23,3 +24,12 @@ class CurrencyExchangeRate(models.Model):
 
     def __str__(self):
         return f"{self.source_currency.code} to {self.exchanged_currency.code} on {self.valuation_date}"
+
+
+class InstantConverter:
+    """ 
+        Fake Model to put the instant converter in Admin site
+    """
+    class Meta:
+        verbose_name = "Instant Converter"
+        verbose_name_plural = "Instant Converter"

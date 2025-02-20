@@ -1,0 +1,89 @@
+{% extends "admin/change_list.html" %}
+{% block content %}
+    {{ block.super }}
+
+    <h2>Currency Converter</h2>
+    <form id="currency-converter-form">
+        {% csrf_token %}
+        <label for="source_currency">Source Currency:</label>
+        <select id="source_currency">
+            {% for currency in currencies %}
+                <option value="{{ currency.id }}">{{ currency.code }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="exchanged_currency">Exchanged Currency:</label>
+        <select id="exchanged_currency">
+            {% for currency in currencies %}
+                <option value="{{ currency.id }}">{{ currency.code }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="amount">Amount:</label>
+        <input type="number" id="amount" step="0.01" required>
+
+        <button type="button" onclick="convertCurrency()">Convert</button>
+        <button type="button" onclick="getLatestRate()">Get Latest Rate</button>
+    </form>
+
+    <h3 id="conversion-title">Conversion Result:</h3>
+    <div id="conversion-result"></div>
+
+    <h3 id="latest-title">Latest Result:</h3>
+    <div id="latest-result"></div>
+
+    <script>
+        function convertCurrency() {
+            let source_currency = document.getElementById("source_currency").value;
+            let exchanged_currency = document.getElementById("exchanged_currency").value;
+            let amount = document.getElementById("amount").value;
+
+            fetch("{% url 'admin:convert_currency' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": document.querySelector("input[name=csrfmiddlewaretoken]").value
+                },
+                body: `source_currency=${source_currency}&exchanged_currency=${exchanged_currency}&amount=${amount}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    document.getElementById("conversion-result").innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                } else {
+                    document.getElementById("conversion-result").innerHTML = `
+                        <p><strong>${data.original_amount} ${data.source_currency}</strong> is <strong>${data.converted_amount} ${data.exchanged_currency}</strong></p>
+                        <p>Exchange Rate: <strong>${data.rate}</strong></p>
+                    `;
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+        function getLatestRate() {
+            let source_currency = document.getElementById("source_currency").value;
+            let exchanged_currency = document.getElementById("exchanged_currency").value;
+
+            fetch("{% url 'admin:get_latest_rate' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": document.querySelector("input[name=csrfmiddlewaretoken]").value
+                },
+                body: `source_currency=${source_currency}&exchanged_currency=${exchanged_currency}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                    
+                if (data.error) {
+                    document.getElementById("latest-result").innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+                } else {
+                    document.getElementById("latest-result").innerHTML = `
+                        <p>Latest Exchange Rate: <strong>1 ${data.source_currency} = ${data.rate} ${data.exchanged_currency}</strong></p>
+                    `;
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+    </script>
+{% endblock %}

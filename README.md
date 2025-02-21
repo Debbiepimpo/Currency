@@ -1,53 +1,132 @@
-# Cardia API
+# 🏦 Currency Exchange API
 
-## Description
+An API for currency conversion and exchange rate queries, built with **Django 5**, **Django Rest Framework**, and **Python 3.10**.
 
-Cardia is a RESTful API for managing products and orders, built using Django and Django REST Framework. It supports CRUD operations for products and allows creating and managing orders associated with those products.
-
----
-
-## Requirements
-
-- **Python 3.10+**
-- **pip** (Python's package manager)
-- SQLite database (preconfigured in the project)
+## 📌 Technologies Used
+- **Python 3.10**
+- **Django 5**
+- **Django REST Framework**
+- **Pipenv** (for virtual environment management)
+- **SQLite/PostgreSQL** (depending on configuration)
+- **CurrencyBeacon API** (to fetch real-time exchange rates)
 
 ---
 
-## Installation and Setup
+## ⚙️ **Local Setup Instructions**
 
-1. **Clone the repository**:
+### 1️⃣ **Clone the Repository**
    ```bash
-   git clone https://github.com/your-username/cardia.git
-   cd cardia
-2. **Install dependencies**:
+   git clone https://github.com/your-username/Currency.git # Using HTTPS
+   git clone git@github.com:Debbiepimpo/Currency.git # Using SSH
+```
+
+### 2️⃣ **Install the Virtual Environment using pipenv**
+    ```bash
+    pip install pipenv
+    pipenv install
+```
+### 3️⃣ **Install dependencies and setup Database**
     ```bash
     pip install -r requirements.txt
-3. **Run migrations**:
-    ```bash
+    python manage.py makemigrations
     python manage.py migrate
-4. **Start the development server**:
+    ```
+### 4️⃣ **Create a Superuser**
+    ```bash
+    python manage.py createsuperuser
+    ```
+    - Follow the instructions and provide a username, email, and password.
+
+### 5️⃣ **Run the Project**
     ```bash
     python manage.py runserver
    ```
-   The server will be available at http://127.0.0.1:8000.
+   The server will be available at http://127.0.0.1:8000/.
 
---- 
-ENDPOINTS
 
-## Product Endpoints
+# 📌 Required Configuration in Django Admin
 
-- **List all products**: `GET /api/products/`
-- **Create a new product**: `POST /api/products/add-product/`
-- **Retrieve a specific product**: `GET /api/products/{id}/`
-- **Update a product**: `PUT /api/products/update-product/{id}/`
-- **Delete a product**: `DELETE /api/products/delete-product/{id}/`
-      
+To ensure the API functions properly, you must configure **Currencies** and **Providers** in the Django admin panel.
 
-## Order Endpoints
+## 🛠 Steps to Configure
 
-- **List all orders**: `GET /api/orders/`
-- **Create a new order**: `POST /api/orders/add-order/`
-- **Retrieve a specific order**: `GET /api/orders/{id}/`
-- **Update an order**: `PUT /api/orders/update-order/{id}/`
-- **Delete an order**: `DELETE /api/orders/delete-order/{id}/`
+1. **Go to the Django Admin Panel**  
+   👉 [http://127.0.0.1:8000/admin](http://127.0.0.1:8000/admin)
+
+2. **Add Currencies** in **Currency**:
+   - **Code**: `EUR`, `USD`, `GBP`, etc.
+   - **Name**: `Euro`, `Dollar`, `Pound`, etc.
+
+3. **Add Providers** in **Provider**:
+   - **Name**: `CurrencyBeacon` or `Mock`
+   - **Priority**: `1` for **primary**, `2` for **secondary**
+   - **Active**: ✅ **(Checked/Enabled)**
+
+📌 **Note:** Ensure that at least one provider is active for the API to work correctly.
+
+# 🔥 Available Endpoints
+
+## 📍 1️⃣ Latest Exchange Rates
+`Get /api/currency-rates/latest/`
+
+### 📌 Example Response:
+
+```json
+{
+    "base_currency": "EUR",
+    "rates": {
+        "USD": 1.08,
+        "GBP": 0.85
+    }
+}
+```
+
+## 📍 2️⃣ Historical Exchange Rates
+`Get /api/currency-rates/historical/`
+
+### 📌 Example Response:
+
+```json
+{
+    "base_currency": "EUR",
+    "date": "2025-02-15",
+    "rates": {
+        "USD": 1.07,
+        "GBP": 0.84
+    }
+}
+```
+
+## 📍 3️⃣ Exchange Rates Over a Time Range
+`Get /api/currency-rates/timeseries/`
+
+### 📌 Example Response:
+
+```json
+{
+    "list": {
+        "2025-02-15": {
+            "USD": 1.07,
+            "GBP": 0.84
+        },
+        "2025-02-16": {
+            "USD": 1.08,
+            "GBP": 0.85
+        }
+    }
+}
+```
+
+## 📍 4️⃣ Currency Conversion
+`Get /api/currency-rates/convert/`
+
+### 📌 Example Response:
+
+```json
+{
+    "from": "USD",
+    "to": "EUR",
+    "amount": 100,
+    "converted_amount": 92.50
+}
+```

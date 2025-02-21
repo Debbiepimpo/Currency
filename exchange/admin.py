@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.urls import path
 from datetime import date
 from django.contrib import admin
-from .models import Currency, CurrencyExchangeRate
+from .models import Currency, CurrencyExchangeRate, Provider
 from .forms import CurrencyConversionForm
 from .providers import CurrencyBeaconProvider
 
@@ -124,7 +124,11 @@ class CurrencyAdmin(admin.ModelAdmin):
 class CurrencyExchangeRateAdmin(admin.ModelAdmin):
     list_display = ("source_currency", "exchanged_currency", "valuation_date", "rate_value")
 
+class ProviderAdmin(admin.ModelAdmin):
+    list_display = ("name", "priority", "is_active")
+    list_editable = ("priority", "is_active")
 
 # Registrar los modelos en el Django Admin
 admin.site.register(Currency, CurrencyAdmin)
 admin.site.register(CurrencyExchangeRate, CurrencyExchangeRateAdmin)
+admin.site.register(Provider, ProviderAdmin)

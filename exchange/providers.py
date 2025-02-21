@@ -2,14 +2,29 @@ import requests
 import random
 from urllib.parse import urlencode
 from datetime import date, datetime, timedelta
+from abc import ABC, abstractmethod
 from .models import Currency
 
 
-class ExchangeRateProvider:
+class ExchangeRateProvider(ABC):
     """Base class for exchange rate providers."""
 
-    def get_exchange_rate(self, source_currency, exchanged_currency, valuation_date):
-        raise NotImplementedError("This method should be implemented in subclasses.")
+    @abstractmethod
+    def get_exchange_rate(self, source_currency, exchanged_currency, valuation_date=None):
+        pass
+
+    @abstractmethod
+    def get_historical_exchange_rates(self, source_currency, exchanged_currency, date):
+        pass
+
+    @abstractmethod
+    def get_exchange_rates_list(self, source_currency, start_date, end_date, exchanged_currencies):
+        pass
+
+    @abstractmethod
+    def convert_currency(self, source_currency, exchange_currency, amount):
+        pass
+
 
 
 class CurrencyBeaconProvider:
@@ -101,7 +116,7 @@ class CurrencyBeaconProvider:
         
         return None
     
-    def get_exchange_rates_list(self, source_currency=None, start_date=None, end_date=None, exchanged_currencies=None):
+    def get_exchange_rates_list(self, source_currency=None, start_date=None, end_date=None, exchanged_currency=None):
         """
         Retrieves exchange rates for a given time period.
         - If `source_currency` is None, fetches the default currency from DB.
@@ -118,12 +133,15 @@ class CurrencyBeaconProvider:
         if start_date is None or end_date is None:
             raise ValueError("Both 'start_date' and 'end_date' must be provided.")
 
-        if exchanged_currencies is None:
-            exchanged_currencies = list(
+        if exchanged_currency is None:
+            exchanged_currency = list(
                 Currency.objects.exclude(code=source_currency).values_list("code", flat=True)
             )
+        elif isinstance(exchanged_currency, str):
+            exchanged_currency = exchanged_currency.replace(" ","").split(",")
 
-        symbols_param = ",".join(exchanged_currencies)
+        symbols_param = ",".join(exchanged_currency)
+        print("SYYYYYYYYYYYYYYYYYYYYY     ",symbols_param)
 
   
         params = {
@@ -188,11 +206,30 @@ class CurrencyBeaconProvider:
         except requests.exceptions.RequestException as e:
             return {"error": f"Request Exception: {str(e)}"}
 
-class MockExchangeRateProvider(ExchangeRateProvider):
+class MockProvider(ExchangeRateProvider):
     """Generate random exchange rate for testing."""
 
-    def get_exchange_rate(self, source_currency, exchanged_currency, valuation_date):
-        return round(random.uniform(0.5, 1.5), 6)
+    def get_exchange_rate(self, source_currency, exchanged_currency, valuation_date=None):
+        """Returns random exchange rate."""
+        return {exchanged_currency: round(random.uniform(0.5, 1.5), 6)}
+
+    def get_historical_exchange_rates(self, source_currency, exchanged_currency, date):
+        """Returns random historical exchange rates."""
+        return {exchanged_currency: round(random.uniform(0.5, 1.5), 6)}
+
+    def get_exchange_rates_list(self, source_currency, start_date, end_date, exchanged_currencies):
+        """Returns random exchange rates over a period."""
+        return {
+            date.strftime("%Y-%m-%d"): {
+                currency: round(random.uniform(0.5, 1.5), 6)
+                for currency in exchanged_currencies.split(",")
+            } for date in [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+        }
+
+    def convert_currency(self, source_currency, exchange_currency, amount):
+        """Converts an amount using a random exchange rate."""
+        rate = round(random.uniform(0.5, 1.5), 6)
+        return {"rate": rate, "converted_amount": round(amount * rate, 2)}
 
 
 # Function to get data using the provider

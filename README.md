@@ -130,3 +130,64 @@ To ensure the API functions properly, you must configure **Currencies** and **Pr
     "converted_amount": 92.50
 }
 ```
+
+# 🔐 Admin Authentication
+To access the Django admin (`/admin`), you must log in with the superuser account created earlier.
+
+---
+
+# 🛠 Project Structure
+```bash
+├── Currency/
+|   ├── settings.py        
+│   ├── urls.py            
+│   ├── wsgi.py            
+│   ├── asgi.py  
+├── apis/
+│   ├── views.py       
+│   ├── urls.py       
+├── exchange/
+│   ├── providers.py   
+│   ├── services.py    
+│   ├── models.py      
+│   ├── views.py                          
+├── manage.py              
+├── requirements.txt       
+├── Pipfile                
+├── BackBase.postman_collection.json  # Postman collection for API testing
+
+
+# 🛠 Additional Notes
+- The API uses **Django Rest Framework** for handling endpoints.
+- Providers can be activated or deactivated dynamically from the admin panel.
+- It is recommended to use **pipenv** to manage the virtual environment.
+- If you add a new provider, simply register it in `providers.py` and the Django admin panel.
+
+---
+
+# 🛠 API Testing with Postman
+- All endpoints can be tested using **Postman**.
+- A Postman collection named **`BackBase.postman_collection.json`** is included in the project.
+- You can import this collection into Postman to quickly access and test the available API endpoints.
+
+
+# 🚀 Future Enhancements for Celery in Django
+
+## 🔹 1️⃣ Implementing Distributed Task Queues
+- Use **Redis** or **RabbitMQ** as a broker instead of Redis for **more scalable** and **reliable** distributed task processing.
+- Set up **multiple workers** across different servers to improve load balancing and parallel execution.
+- Leverage **Celery routing** to distribute tasks based on priority and worker capabilities.
+
+---
+
+## 🔹 2️⃣ Optimizing Celery Worker Configurations
+- Implement **worker autoscaling** to dynamically adjust the number of workers based on task load.
+- Use **prefetch limits** to control how many tasks each worker fetches to prevent memory overuse.
+- Enable **acknowledgment settings** to ensure tasks are not lost in case of worker failures.
+
+---
+
+## 🔹 3️⃣ Integrating Celery with Django Signals
+- Automatically trigger background tasks when Django model actions occur (e.g., **sending emails after user registration**).
+- Reduce redundant database queries by processing model updates asynchronously.
+- Example: Using **post_save** to process new objects in a queue.
